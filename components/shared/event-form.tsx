@@ -18,13 +18,14 @@ import { CalendarIcon, Plus, X } from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
-import { Event, Date as PrismaDate } from "@prisma/client";
-import { FindEvents } from "@/lib/findEvents";
+import React, { useRef, useState } from "react";
+import { Event } from "@prisma/client";
+
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "../ui/card";
+import { Card, CardContent, CardFooter } from "../ui/card";
 import { eventNames } from "process";
 import { DeleteDialog } from "./delete-event-dialog";
+import { ReminderDialog } from "./reminder-dialog";
 
 const formSchema = z.object({
   eventDate: z.date(),
@@ -35,14 +36,15 @@ const formSchema = z.object({
 
 interface EventFormProps {
   date: Date;
-  initialData: PrismaDate;
+
   userId: string;
 }
 
-export function EventForm({ date, initialData, userId }: EventFormProps) {
+export function EventForm({ date, userId }: EventFormProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const toggleCreating = () => setIsCreating(!isCreating);
+  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,6 +54,11 @@ export function EventForm({ date, initialData, userId }: EventFormProps) {
     },
   });
   const { isValid, isSubmitting } = form.formState;
+  React.useEffect(() => {
+    if (isCreating) {
+      inputRef.current?.focus();
+    }
+  }, [isCreating]);
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const eventData = {
@@ -60,10 +67,11 @@ export function EventForm({ date, initialData, userId }: EventFormProps) {
       };
       await axios.post("/api/events", eventData);
       toast.success("event created");
+
       toggleCreating();
+      await getEvents();
       router.refresh();
       form.reset();
-      await getEvents();
     } catch {
       toast.error("something went wrong");
     }
@@ -72,7 +80,7 @@ export function EventForm({ date, initialData, userId }: EventFormProps) {
   async function getEvents() {
     try {
       const response = await axios.get(
-        `/api/events?date=${date.toISOString()}&userId=${userId}`
+        `/api/events?date=${date.toISOString()}`
       );
       setEvents(response.data);
       router.refresh();
@@ -101,7 +109,7 @@ export function EventForm({ date, initialData, userId }: EventFormProps) {
         <Button size={"sm"} variant={"ghost"} onClick={toggleCreating}>
           {!isCreating ? (
             <>
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4" />
               Add Event
             </>
           ) : (
@@ -139,6 +147,7 @@ export function EventForm({ date, initialData, userId }: EventFormProps) {
                         placeholder="Write event name..."
                         {...field}
                         disabled={isSubmitting}
+                        ref={inputRef}
                       />
                     </FormControl>
                     <FormMessage />
@@ -165,18 +174,29 @@ export function EventForm({ date, initialData, userId }: EventFormProps) {
               key={event.id}
               className="transition-all hover:shadow-lg mb-1"
             >
-              <CardContent className="p-3 flex items-center justify-between">
-                <h3 className="text-md font-medium text-gray-900">
-                  {event.eventName}
-                </h3>
-                <DeleteDialog onClick={() => handledelete(event.id)}>
-                  <Button
-                    size={"icon"}
-                    className=" flex items-center justify-center"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </DeleteDialog>
+              <CardContent className="p-3 flex flex-col gap-1">
+                <div className="flex flex-1 items-center justify-between">
+                  <h3 className="text-md font-medium text-gray-900">
+                    {event.eventName}
+                  </h3>
+                  <DeleteDialog onClick={() => handledelete(event.id)}>
+                    <Button
+                      size={"icon"}
+                      className=" flex items-center justify-center"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </DeleteDialog>
+                </div>
+                <ReminderDialog
+                  date={date}
+                  eventName={event.eventName}
+                  initialData={event}
+                >
+                  <p className="text-xs text-neutral-500 italic tracking-wide cursor-pointer">
+                    Click to add reminders
+                  </p>
+                </ReminderDialog>
               </CardContent>
             </Card>
           ))}

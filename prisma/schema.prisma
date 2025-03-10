@@ -13,23 +13,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Date {
-  id     String   @id @default(cuid())
+model DateRecord {
+  id     String   @id @default(uuid())
   date   DateTime @unique
-  events Event[]  @relation("DateEvents")
-
-  @@map("dates")
-}
-
-model Event {
-  id        String @id @default(cuid())
-  eventName String
-  userId    String
-  dateId    String
-  date      Date   @relation("DateEvents", fields: [dateId], references: [id])
+  events Event[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
 
-  @@index([dateId, userId])
+model Event {
+  id         String     @id @default(uuid())
+  eventName  String
+  userId     String
+  dateId     String
+  dateRecord DateRecord @relation(fields: [dateId], references: [id])
+  reminders  Reminder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Reminder {
+  id             String   @id @default(uuid())
+  reminderTitle  String
+  userEmail      String
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  reminderStatus Boolean  @default(true)
+  remindAt       DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

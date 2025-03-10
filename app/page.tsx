@@ -1,29 +1,10 @@
-import { Calendar } from "@/components/shared/calendar";
-import { prisma } from "@/lib/db";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
-export default async function Home() {
-  const { userId } = await auth();
-  if (!userId) {
-    redirect("/error-page");
-  }
-  const events = await prisma.date.findMany({
-    where: {
-      events: {
-        some: {
-          userId,
-        },
-      },
-    },
-    include: {
-      events: true,
-    },
-  });
+export default function Home() {
   return (
-    <div className="h-full flex items-center justify-center">
-      <Calendar initialData={events} userId={userId} />
-    </div>
+    <Link href={"/calendar"}>
+      <Button>Calendar new link</Button>
+    </Link>
   );
 }
