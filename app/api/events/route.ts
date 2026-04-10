@@ -15,11 +15,20 @@ export async function GET(req: Request) {
     }
 
     const date = new Date(dateParam);
+
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
     const events = await prisma.event.findMany({
       where: {
         userId,
         dateRecord: {
-          date: date,
+          date: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
         },
       },
     });
@@ -44,9 +53,9 @@ export async function POST(req: Request) {
     const newEvent = await prisma.$transaction(
       async (tx) => {
         const dateRecord = await tx.dateRecord.upsert({
-          where: { date: parsedDate },
+          where: { date: new Date(parsedDate) },
           update: {},
-          create: { date: parsedDate },
+          create: { date: new Date(parsedDate) },
         });
 
         const newEvent = await tx.event.create({
@@ -66,7 +75,7 @@ export async function POST(req: Request) {
         ]);
         return newEvent;
       },
-      { timeout: 10000 }
+      { timeout: 10000 },
     );
     return NextResponse.json(newEvent);
   } catch (error) {

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "../components/styles/calendar.css";
+import "@/components/styles/calendar.css";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/shared/navbar";
+import ReactQueryProvider from "@/components/providers/react-query-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +34,10 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <ToastProvider />
-          <Navbar />
-          {children}
+          <ReactQueryProvider>
+            <ToastProvider />
+            <TooltipProvider>{children}</TooltipProvider>
+          </ReactQueryProvider>
         </body>
       </html>
     </ClerkProvider>

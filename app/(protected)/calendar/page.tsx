@@ -1,4 +1,5 @@
 import { Calendar } from "@/components/shared/calendar";
+import { ChatButton } from "@/components/shared/chat-button";
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -24,6 +25,9 @@ export default async function CalendarPage() {
   return (
     <div className="h-full flex items-center justify-center">
       <Calendar initialData={events} userId={userId} />
+      <div className="fixed bottom-6 right-6 z-50">
+        <ChatButton />
+      </div>
     </div>
   );
 }

@@ -5,10 +5,10 @@ import { auth } from "@clerk/nextjs/server";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import {
-  convertToCoreMessages,
-  LangChainAdapter,
-  LanguageModelV1,
-  streamText,
+convertToCoreMessages,
+LangChainAdapter,
+LanguageModelV1,
+streamText,
 } from "ai";
 import { NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
@@ -17,20 +17,19 @@ import { createEvent } from "@/lib/createEvent";
 import { format } from "date-fns";
 import axios from "axios";
 import { tool } from "@langchain/core/tools";
-import { HumanMessage, ToolMessage } from "@langchain/core/messages";
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { userId } = await auth();
-    if (!userId) {
-      return new NextResponse("Unauthorized", { status: 400 });
-    }
-    type Message = {
-      role: "user" | "assistant";
-      content: string;
-    };
-    const messages: Message[] = body.messages;
+try {
+const body = await req.json();
+const { userId } = await auth();
+if (!userId) {
+return new NextResponse("Unauthorized", { status: 400 });
+}
+type Message = {
+role: "user" | "assistant";
+content: string;
+};
+const messages: Message[] = body.messages;
 
     const messageTruncated = messages.slice(-6);
     const latestMessage = messages[messages.length - 1]?.content || "";
@@ -56,37 +55,28 @@ export async function POST(req: Request) {
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleDateString();
     const formattedTime = currentDate.toLocaleTimeString();
-
     const prompt = ChatPromptTemplate.fromMessages([
       [
         "system",
-        `You are a strict calendar assistant.
+        `You are a friendly and helpful calendar assistant. Your role is to:
+          - Warmly greet users who say hello/hi with "Hi there! How can I help you with your calendar today?"
+          - Help users find event details from their calendar
+          - Respond with event dates when specifically asked
+          - Always reference that you are checking their calendar app for accuracy
+          - Politely explain when no matching event is found
+          - Offer to help create new events when appropriate
+          - Today's date is ${formattedDate} and time is ${formattedTime}.
 
-                  Your responsibilities:
-                  - Answer ONLY using the provided event data
-                  - DO NOT guess or fabricate any event
-                  - If the event is not found, say exactly:
-                    "I checked your calendar but couldn’t find that event."
+          When providing event information:
+          - Include both the event name and date
+          - Confirm you are pulling this from their calendar
+          - Keep responses concise and focused
+          - Never invent or assume event details not in the data
 
-                  Rules:
-                  - Only use events from the "EVENTS" section
-                  - Do NOT infer missing details
-                  - Do NOT make assumptions
-                  - Be concise and factual
+          Event database format:
+          {events}
 
-                  When answering:
-                  - Include event name and date if found
-                  - Clearly state that the information comes from the calendar
-
-                  If the user wants to create an event:
-                  - Call the "create_event" tool
-
-                  Current date: ${formattedDate}
-                  Current time: ${formattedTime}
-
-                  EVENTS:
-                  {events}
-                  `,
+          If no event matches the query, respond with: "I've checked your calendar but I'm sorry, I couldn't find that event. Would you like to schedule it?"`,
       ],
       ["user", "{input}"],
     ]);
@@ -149,14 +139,14 @@ export async function POST(req: Request) {
         description: "creating a event for a particular date on a calendar",
         schema: z.object({
           eventName: z.string().describe("Name of the event"),
-          eventDate: z.string().describe("Date of the event as ISO string"),
+          eventDate: z.date().describe("Date of the event"),
         }),
       },
     );
 
     const google = new ChatGoogleGenerativeAI({
       apiKey: process.env.GEMINI_API_KEY,
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview",
     }).bindTools([createEventTool]);
 
     const chain = prompt.pipe(google);
@@ -171,27 +161,34 @@ export async function POST(req: Request) {
     });
     console.log("[CHAT_API_ROUTE] Response streaming started");
     console.log("[Response]", response);
-
     if (response.tool_calls && response.tool_calls.length > 0) {
       for (const toolCall of response.tool_calls) {
         if (toolCall.name === "create_event") {
-          const toolResult = await createEventTool.invoke(
-            toolCall.args as { eventName: string; eventDate: string },
+          console.log(
+            "[DEBUG] Executing create_event tool with args:",
+            toolCall.args,
           );
 
-          console.log(toolResult);
+          // Execute the createEvent function with the provided arguments
+          const eventResult = await createEvent({
+            eventName: toolCall.args.eventName,
+            eventDate: new Date(toolCall.args.eventDate),
+          });
 
-          const messagesWithToolResult = [
-            new HumanMessage(latestMessage),
-            response,
-            new ToolMessage({
-              tool_call_id: toolCall.id ?? "create_event",
-              content: JSON.stringify(toolResult),
-            }),
-          ];
+          console.log("[DEBUG] Event creation result:", eventResult);
+          const response = await chain.stream({
+            input: messageTruncated.map((m) => m.content).join("\n"),
+            events: relevantEvents
+              .map(
+                (e) =>
+                  `Event Date : ${e.dateRecord.date}\n\n EventName: ${e.eventName}`,
+              )
+              .join("\n"),
+            toolResults: [eventResult],
+          });
 
-          const finalStream = await google.stream(messagesWithToolResult);
-          return LangChainAdapter.toDataStreamResponse(finalStream);
+          console.log("[CHAT_API_ROUTE] Response streaming started");
+          return LangChainAdapter.toDataStreamResponse(response);
         }
       }
     }
@@ -210,8 +207,9 @@ export async function POST(req: Request) {
     console.log(finalResponse);
 
     return LangChainAdapter.toDataStreamResponse(finalResponse);
-  } catch (error) {
-    console.log("[CHAT_API_ROUTE]", error);
-    return new NextResponse("Invalid error", { status: 500 });
-  }
+
+} catch (error) {
+console.log("[CHAT_API_ROUTE]", error);
+return new NextResponse("Invalid error", { status: 500 });
+}
 }

@@ -1,6 +1,6 @@
 .react-calendar {
-  width: 450px;
-  max-width: 100%;
+  width: 85% !important;
+  max-width: 85% !important;
   background: white;
   border-radius: 15px;
   border: 1px solid rgb(209 213 219);
@@ -49,7 +49,7 @@
 }
 .react-calendar__navigation {
   display: flex;
-  height: 44px;
+  height: clamp(36px, 5vw, 56px);
   margin-bottom: 1em;
 }
 .react-calendar__navigation button {
@@ -80,7 +80,7 @@
 
 .react-calendar__navigation__label__labelText {
   font-weight: 500;
-  font-size: 1.05em;
+  font-size: clamp(0.85rem, 2.5vw, 1.1rem);
 }
 .react-calendar__navigation__label {
   pointer-events: none;
@@ -142,6 +142,7 @@
   max-width: 100%;
   background: none;
   text-align: center;
+  font-size: clamp(0.7rem, 2vw, 1rem);
 }
 .react-calendar__tile:disabled {
   background-color: #f0f0f0;

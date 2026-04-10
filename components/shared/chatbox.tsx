@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { Message, useChat } from "ai/react";
+import { Message, useChat } from "@ai-sdk/react";
 import { Button } from "../ui/button";
 import { Bot, Send, Trash, User, X } from "lucide-react";
 import { Input } from "../ui/input";
@@ -38,7 +38,7 @@ export function Chatbox({ open, onClose }: ChatboxProps) {
     <div
       className={cn(
         "bottom-0 left-0 z-50 w-[500px] p-1 xl:left-36",
-        open ? "fixed" : "hidden"
+        open ? "fixed" : "hidden",
       )}
     >
       <>
@@ -110,7 +110,7 @@ function ChatMessage({ message: { role, content } }: ChatMessageProps) {
     <div
       className={cn(
         "mb-3 flex items-center",
-        isAI ? "me-5 justify-start" : "ms-5 justify-end"
+        isAI ? "me-5 justify-start" : "ms-5 justify-end",
       )}
     >
       {isAI ? (
@@ -121,7 +121,7 @@ function ChatMessage({ message: { role, content } }: ChatMessageProps) {
       <div
         className={cn(
           "rounded-md border px-3 py-2",
-          isAI ? "bg-background" : "bg-foreground text-background"
+          isAI ? "bg-background" : "bg-foreground text-background",
         )}
       >
         {content}
