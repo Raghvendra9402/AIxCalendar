@@ -2,22 +2,14 @@ import { prisma } from "@/lib/db";
 import { getEmbeddings } from "@/lib/getEmbeddings";
 import { vectorIndex } from "@/lib/pinecone";
 import { auth } from "@clerk/nextjs/server";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import {
-  convertToCoreMessages,
-  LangChainAdapter,
-  LanguageModelV1,
-  streamText,
-} from "ai";
-import { NextResponse } from "next/server";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { z } from "zod";
-import { createEvent } from "@/lib/createEvent";
-import { format } from "date-fns";
-import axios from "axios";
-import { tool } from "@langchain/core/tools";
 import { HumanMessage, ToolMessage } from "@langchain/core/messages";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { tool } from "@langchain/core/tools";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { toUIMessageStream } from "@ai-sdk/langchain";
+import { createUIMessageStreamResponse } from "ai";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 export async function POST(req: Request) {
   try {
@@ -191,7 +183,9 @@ export async function POST(req: Request) {
           ];
 
           const finalStream = await google.stream(messagesWithToolResult);
-          return LangChainAdapter.toDataStreamResponse(finalStream);
+          return createUIMessageStreamResponse({
+            stream: toUIMessageStream(finalStream),
+          });
         }
       }
     }
@@ -209,7 +203,9 @@ export async function POST(req: Request) {
     console.log("[CHAT_API_ROUTE] Response streaming started");
     console.log(finalResponse);
 
-    return LangChainAdapter.toDataStreamResponse(finalResponse);
+    return createUIMessageStreamResponse({
+      stream: toUIMessageStream(finalResponse),
+    });
   } catch (error) {
     console.log("[CHAT_API_ROUTE]", error);
     return new NextResponse("Invalid error", { status: 500 });
