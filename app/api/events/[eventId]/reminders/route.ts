@@ -32,7 +32,13 @@ export async function GET(req: Request) {
 
 export async function POST(
   req: Request,
-  { params }: { params: { eventId: string } },
+  {
+    params,
+  }: {
+    params: Promise<{
+      eventId: string;
+    }>;
+  },
 ) {
   try {
     const { eventId } = await params;
