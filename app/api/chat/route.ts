@@ -10,6 +10,7 @@ import { toUIMessageStream } from "@ai-sdk/langchain";
 import { createUIMessageStreamResponse } from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 export async function POST(req: Request) {
   try {
@@ -93,7 +94,7 @@ export async function POST(req: Request) {
           const parsedDate = new Date(eventDate);
           const dateAsObject = new Date(parsedDate);
           const newEvent = await prisma.$transaction(
-            async (tx) => {
+            async (tx: Prisma.TransactionClient) => {
               const dateRecord = await tx.dateRecord.upsert({
                 where: { date: dateAsObject },
                 update: {},
