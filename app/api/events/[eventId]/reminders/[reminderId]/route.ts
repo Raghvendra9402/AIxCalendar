@@ -7,10 +7,10 @@ export async function DELETE(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       eventId: string;
       reminderId: string;
-    };
+    }>;
   },
 ) {
   try {
