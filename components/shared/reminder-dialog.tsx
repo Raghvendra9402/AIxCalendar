@@ -128,7 +128,7 @@ export function ReminderDialog({
 
   React.useEffect(() => {
     getReminders();
-  }, [initialData.id]);
+  }, [initialData.id, getReminders]);
 
   const showDate = format(date, "PPP");
 
