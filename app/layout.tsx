@@ -1,12 +1,11 @@
+import ReactQueryProvider from "@/components/providers/react-query-provider";
+import { ToastProvider } from "@/components/providers/toast-provider";
+import "@/components/styles/calendar.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "@/components/styles/calendar.css";
-import { ToastProvider } from "@/components/providers/toast-provider";
-import { ClerkProvider } from "@clerk/nextjs";
-import Navbar from "@/components/shared/navbar";
-import ReactQueryProvider from "@/components/providers/react-query-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

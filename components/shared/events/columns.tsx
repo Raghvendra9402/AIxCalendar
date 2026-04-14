@@ -62,42 +62,42 @@ export const columns: ColumnDef<Event>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => {
-      return <p>No reminder</p>;
-    },
+    // cell: ({ row }) => {
+    //   return <p>No reminder</p>;
+    // },
   },
   {
     id: "actions",
-    cell: ({ row }) => {
-      const { id } = row.original;
-      return (
-        <>
-          <Dialog>
-            <DialogContent className="min-w-4xl max-h-125 overflow-scroll">
-              <DialogHeader>
-                <DialogTitle>Edit listing</DialogTitle>
-              </DialogHeader>
-              {/* <ListingEditForm listingId={id} /> */}
-              <div>hello</div>
-            </DialogContent>
-          </Dialog>
+    // cell: ({ row }) => {
+    //   // const { id } = row.original;
+    //   return (
+    //     <>
+    //       <Dialog>
+    //         <DialogContent className="min-w-4xl max-h-125 overflow-scroll">
+    //           <DialogHeader>
+    //             <DialogTitle>Edit listing</DialogTitle>
+    //           </DialogHeader>
+    //           {/* <ListingEditForm listingId={id} /> */}
+    //           <div>hello</div>
+    //         </DialogContent>
+    //       </Dialog>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <span className="sr-only">Open</span>
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Pencil />
-                Edit
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </>
-      );
-    },
+    //       <DropdownMenu>
+    //         <DropdownMenuTrigger asChild>
+    //           <Button variant="ghost" size="icon">
+    //             <span className="sr-only">Open</span>
+    //             <MoreHorizontal />
+    //           </Button>
+    //         </DropdownMenuTrigger>
+    //         <DropdownMenuContent align="end">
+    //           <DropdownMenuItem>
+    //             <Pencil />
+    //             Edit
+    //           </DropdownMenuItem>
+    //         </DropdownMenuContent>
+    //       </DropdownMenu>
+    //     </>
+    //   );
+    // },
   },
 ];

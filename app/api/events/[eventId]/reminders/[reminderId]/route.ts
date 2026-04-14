@@ -4,10 +4,11 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { eventId: string; reminderId: string } }
+  { params }: { params: { eventId: string; reminderId: string } },
 ) {
   try {
     const { reminderId, eventId } = await params;
+    console.log(eventId);
     const { userId } = await auth();
 
     if (!reminderId || !userId) {

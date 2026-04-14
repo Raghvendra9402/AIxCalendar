@@ -56,6 +56,7 @@ export function EventForm({ date, userId }: EventFormProps) {
   }, [isCreating]);
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      console.log(userId);
       const eventData = {
         eventDate: values.eventDate,
         eventNames: [values.eventName],

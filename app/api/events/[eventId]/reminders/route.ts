@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/db";
 import { reminderQueue } from "@/lib/reminderQueue";
 import { auth } from "@clerk/nextjs/server";
-import { format } from "date-fns";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -33,7 +32,7 @@ export async function GET(req: Request) {
 
 export async function POST(
   req: Request,
-  { params }: { params: { eventId: string } }
+  { params }: { params: { eventId: string } },
 ) {
   try {
     const { eventId } = await params;
@@ -69,7 +68,7 @@ export async function POST(
         title,
         email,
       },
-      { delay }
+      { delay },
     );
     return NextResponse.json(reminder);
   } catch (error) {

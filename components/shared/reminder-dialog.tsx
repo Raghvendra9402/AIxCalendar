@@ -20,7 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Event, Reminder } from "@prisma/client";
 import axios from "axios";
 import { format } from "date-fns";
-import { Plus, X } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -131,6 +131,14 @@ export function ReminderDialog({
   }, [initialData.id]);
 
   const showDate = format(date, "PPP");
+
+  if (isLoading) {
+    return (
+      <div>
+        <Loader2 />
+      </div>
+    );
+  }
 
   return (
     <>
