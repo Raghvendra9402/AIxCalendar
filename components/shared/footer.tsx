@@ -6,7 +6,6 @@ export function Footer() {
     <footer className="bg-slate-900 text-slate-400 py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-start justify-between gap-10">
-          {/* Brand */}
           <div className="max-w-xs">
             <Link href="/" className="flex items-center gap-2 mb-3">
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
@@ -18,11 +17,10 @@ export function Footer() {
             </Link>
             <p className="text-sm leading-relaxed">
               The intelligent calendar assistant that manages your time so you
-              don't have to.
+              don&apos;t have to.
             </p>
           </div>
 
-          {/* Links */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-10 text-sm">
             {[
               {

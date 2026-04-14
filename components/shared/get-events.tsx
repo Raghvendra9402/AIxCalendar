@@ -14,10 +14,9 @@ import { ReminderDialog } from "./reminder-dialog";
 
 interface EventFormProps {
   date: Date;
-  userId: string;
 }
 
-export default function GetEvents({ date, userId }: EventFormProps) {
+export default function GetEvents({ date }: EventFormProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { data: events, status } = useQuery<Event[]>({

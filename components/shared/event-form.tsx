@@ -136,7 +136,7 @@ export function EventForm({ date, userId }: EventFormProps) {
         )}
       </div>
       <div className="py-4 px-2 overflow-scroll">
-        {!isCreating && <GetEvents date={date} userId={userId} />}
+        {!isCreating && <GetEvents date={date} />}
       </div>
     </>
   );
