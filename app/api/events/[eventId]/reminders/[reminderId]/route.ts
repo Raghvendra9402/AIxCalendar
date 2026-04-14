@@ -4,20 +4,23 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { eventId: string; reminderId: string } },
+  context: { params: Record<string, string> },
 ) {
   try {
-    const { reminderId, eventId } = await params;
-    console.log(eventId);
+    const { eventId, reminderId } = context.params;
     const { userId } = await auth();
 
     if (!reminderId || !userId) {
-      return new NextResponse("Unauthorized", { status: 400 });
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const deletedReminder = await prisma.reminder.delete({
+    const deletedReminder = await prisma.reminder.deleteMany({
       where: {
         id: reminderId,
+        eventId: eventId,
+        event: {
+          userId: userId,
+        },
       },
     });
 
