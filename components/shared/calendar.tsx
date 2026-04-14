@@ -1,13 +1,12 @@
 "use client";
+import { cn } from "@/lib/utils";
+import { useUser } from "@clerk/nextjs";
+import { Prisma } from "@prisma/client";
+import { redirect } from "next/navigation";
 import React, { useState } from "react";
 import ReactCalendar from "react-calendar";
 import { DateSheet } from "./date-selected-sheet";
 import { EventForm } from "./event-form";
-import { DateRecord, Prisma } from "@prisma/client";
-import { cn } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 
 interface CalendarProps {
   initialData: Prisma.DateRecordGetPayload<{

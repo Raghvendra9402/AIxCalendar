@@ -1,8 +1,8 @@
 "use client";
 
+import { Bot, BotOff } from "lucide-react";
 import React from "react";
 import { Button } from "../ui/button";
-import { Bot, BotOff } from "lucide-react";
 import { Chatbox } from "./chatbox";
 
 export function ChatButton() {

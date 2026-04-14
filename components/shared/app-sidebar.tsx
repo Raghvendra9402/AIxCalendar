@@ -3,38 +3,20 @@
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import {
-  Calendar,
-  ChevronRight,
-  EllipsisVertical,
-  Heart,
-  Home,
-  List,
-  LogOutIcon,
-  Notebook,
-  NotebookPenIcon,
-  NotebookText,
-  Plus,
-} from "lucide-react";
+import { Calendar, List } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { Separator } from "../ui/separator";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-
-import { Button } from "../ui/button";
+import { usePathname } from "next/navigation";
+import { Separator } from "../ui/separator";
 
 const items = [
   {

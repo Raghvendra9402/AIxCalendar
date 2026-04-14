@@ -5,13 +5,12 @@ import { Event } from "@prisma/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { Loader2, TriangleAlert, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Card, CardContent, CardFooter } from "../ui/card";
-import { eventNames } from "process";
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
 import { DeleteDialog } from "./delete-event-dialog";
 import { ReminderDialog } from "./reminder-dialog";
-import { Button } from "../ui/button";
-import { useRouter } from "next/navigation";
 
 interface EventFormProps {
   date: Date;

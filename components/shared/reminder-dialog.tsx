@@ -7,10 +7,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { ReactNode, useState } from "react";
+import { Event, Reminder } from "@prisma/client";
+import axios from "axios";
+import { format } from "date-fns";
+import { Plus, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import * as z from "zod";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
 import {
   Form,
   FormControl,
@@ -20,26 +38,7 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "../ui/button";
-import { eventNames } from "process";
-import { format } from "date-fns";
-import toast from "react-hot-toast";
-import axios from "axios";
-import { Event, Reminder } from "@prisma/client";
-import { useUser } from "@clerk/nextjs";
-import { Loader2, Pencil, Plus, X } from "lucide-react";
-import { Card, CardContent } from "../ui/card";
 import { DeleteDialog } from "./delete-event-dialog";
-import { useRouter } from "next/navigation";
-import { Badge } from "../ui/badge";
-import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   email: z.string(),
@@ -95,7 +94,7 @@ export function ReminderDialog({
       toggleCreating();
       router.refresh();
       await getReminders();
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong");
     }
   };
@@ -103,10 +102,10 @@ export function ReminderDialog({
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `/api/events/${initialData.id}/reminders?eventId=${initialData.id}`
+        `/api/events/${initialData.id}/reminders?eventId=${initialData.id}`,
       );
       setReminders(response.data);
-    } catch (error) {
+    } catch {
       toast.error("something went wrong");
     } finally {
       setIsLoading(false);
@@ -116,13 +115,13 @@ export function ReminderDialog({
   async function handleDelete(reminderId: string) {
     try {
       await axios.delete(
-        `/api/events/${initialData.id}/reminders/${reminderId}`
+        `/api/events/${initialData.id}/reminders/${reminderId}`,
       );
 
       toast.success("Reminder deleted");
       router.refresh();
       await getReminders();
-    } catch (error) {
+    } catch {
       toast.error("something went wrong");
     }
   }
@@ -294,7 +293,7 @@ export function ReminderDialog({
                           "p-1 font-medium italic",
                           reminder.reminderStatus === true
                             ? "bg-emerald-500 hover:bg-emerald-500"
-                            : "bg-red-600  hover:bg-red-600"
+                            : "bg-red-600  hover:bg-red-600",
                         )}
                       >
                         {reminder.reminderStatus === true

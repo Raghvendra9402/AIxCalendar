@@ -1,9 +1,15 @@
 "use client";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import axios from "axios";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
+import { format } from "date-fns";
+import { CalendarIcon, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { Button } from "../ui/button";
 import {
   Form,
   FormControl,
@@ -13,19 +19,7 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { CalendarIcon, Loader2, Plus, X } from "lucide-react";
-import { format } from "date-fns";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
-import React, { useRef, useState } from "react";
-import { Event } from "@prisma/client";
 
-import { cn } from "@/lib/utils";
-import { Card, CardContent, CardFooter } from "../ui/card";
-import { eventNames } from "process";
-import { DeleteDialog } from "./delete-event-dialog";
-import { ReminderDialog } from "./reminder-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import GetEvents from "./get-events";
 

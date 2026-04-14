@@ -1,10 +1,10 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
-import { Button } from "../ui/button";
 import { Bot, Send, Trash, User, X } from "lucide-react";
-import { Input } from "../ui/input";
 import React from "react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 interface ChatboxProps {
   open: boolean;

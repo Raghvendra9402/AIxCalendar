@@ -1,11 +1,10 @@
 "use client";
 
 import { UserButton, useUser } from "@clerk/nextjs";
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { ChatButton } from "./chat-button";
-import { Calendar } from "lucide-react";
-import Image from "next/image";
 
 export default function Navbar() {
   const { isSignedIn } = useUser();
