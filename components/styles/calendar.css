@@ -186,3 +186,47 @@
 .event-date:hover {
   background-color: #059669 !important; /* Darker emerald */
 }
+
+.dark .react-calendar {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+.dark .react-calendar__navigation button:enabled:hover {
+  background-color: hsl(var(--muted));
+}
+
+.dark .react-calendar__navigation__arrow {
+  background-color: hsl(var(--card));
+}
+
+.dark .react-calendar__navigation__arrow:hover {
+  background-color: hsl(var(--muted));
+}
+
+.dark .react-calendar__tile {
+  color: hsl(var(--foreground));
+}
+
+.dark .react-calendar__tile:enabled:hover {
+  background-color: hsl(var(--muted));
+}
+
+.dark .react-calendar__tile--now {
+  border: 2px solid hsl(var(--primary));
+  color: hsl(var(--primary));
+}
+
+.dark .react-calendar__tile--active {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.dark .event-date {
+  background-color: hsl(160 84% 39%) !important;
+}
+
+.dark .event-date:hover {
+  background-color: hsl(160 84% 32%) !important;
+}

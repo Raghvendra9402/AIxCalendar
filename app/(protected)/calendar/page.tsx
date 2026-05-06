@@ -7,27 +7,12 @@ import { redirect } from "next/navigation";
 export default async function CalendarPage() {
   const { userId } = await auth();
   if (!userId) {
-    redirect("/error-page");
+    return redirect("/error-page");
   }
-  const events = await prisma.dateRecord.findMany({
-    where: {
-      events: {
-        some: {
-          userId,
-        },
-      },
-    },
-    include: {
-      events: true,
-    },
-  });
 
   return (
     <div className="h-full flex items-center justify-center">
-      <Calendar initialData={events} userId={userId} />
-      <div className="fixed bottom-6 right-6 z-50">
-        <ChatButton />
-      </div>
+      <Calendar userId={userId} />
     </div>
   );
 }

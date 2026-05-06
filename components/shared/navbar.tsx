@@ -45,8 +45,6 @@ export default function Navbar() {
                     },
                   }}
                 />
-
-                <ChatButton />
               </div>
             ) : (
               <div className="flex items-center gap-3">

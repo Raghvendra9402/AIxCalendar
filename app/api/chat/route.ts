@@ -7,7 +7,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { tool } from "@langchain/core/tools";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { toUIMessageStream } from "@ai-sdk/langchain";
-import { createUIMessageStreamResponse } from "ai";
+import { LangChainAdapter } from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
@@ -184,9 +184,7 @@ export async function POST(req: Request) {
           ];
 
           const finalStream = await google.stream(messagesWithToolResult);
-          return createUIMessageStreamResponse({
-            stream: toUIMessageStream(finalStream),
-          });
+          return LangChainAdapter.toDataStreamResponse(finalStream);
         }
       }
     }
@@ -204,9 +202,7 @@ export async function POST(req: Request) {
     console.log("[CHAT_API_ROUTE] Response streaming started");
     console.log(finalResponse);
 
-    return createUIMessageStreamResponse({
-      stream: toUIMessageStream(finalResponse),
-    });
+    return LangChainAdapter.toDataStreamResponse(finalResponse);
   } catch (error) {
     console.log("[CHAT_API_ROUTE]", error);
     return new NextResponse("Invalid error", { status: 500 });

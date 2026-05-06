@@ -14,13 +14,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  useCreateReminder,
+  useDeleteReminder,
+  useGetReminders,
+} from "@/hooks/useReminders";
 import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Event, Reminder } from "@prisma/client";
-import axios from "axios";
+import { Event } from "@prisma/client";
 import { format } from "date-fns";
-import { Loader2, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -60,9 +64,10 @@ export function ReminderDialog({
   eventName,
   initialData,
 }: ReminderDialogProps) {
-  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const { data: reminders = [], isLoading } = useGetReminders(initialData.id);
+  const createReminder = useCreateReminder(initialData.id);
+  const deleteReminder = useDeleteReminder(initialData.id);
   const [isCreating, setIsCreating] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { user } = useUser();
   const userEmail = user?.primaryEmailAddress?.emailAddress;
@@ -86,247 +91,241 @@ export function ReminderDialog({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     date.setHours(Number(values.hour));
     date.setMinutes(Number(values.minute));
-    const payload = { date, title: values.title, email: userEmail };
-    try {
-      console.log(payload);
-      await axios.post(`/api/events/${initialData.id}/reminders`, payload);
-      toast.success("Reminder set");
-      toggleCreating();
-      router.refresh();
-      await getReminders();
-    } catch {
-      toast.error("Something went wrong");
-    }
+    const payload = { date, title: values.title, email: userEmail! };
+    createReminder.mutate(payload, {
+      onSuccess: () => {
+        toggleCreating();
+        form.reset();
+      },
+    });
   };
-  async function getReminders() {
-    try {
-      setIsLoading(true);
-      const response = await axios.get(
-        `/api/events/${initialData.id}/reminders?eventId=${initialData.id}`,
-      );
-      setReminders(response.data);
-    } catch {
-      toast.error("something went wrong");
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
-  async function handleDelete(reminderId: string) {
-    try {
-      await axios.delete(
-        `/api/events/${initialData.id}/reminders/${reminderId}`,
-      );
-
-      toast.success("Reminder deleted");
-      router.refresh();
-      await getReminders();
-    } catch {
-      toast.error("something went wrong");
-    }
-  }
-
-  React.useEffect(() => {
-    getReminders();
-  }, [initialData.id, getReminders]);
+  const handleDelete = (reminderId: string) => {
+    deleteReminder.mutate(reminderId);
+  };
 
   const showDate = format(date, "PPP");
-
-  if (isLoading) {
-    return (
-      <div>
-        <Loader2 />
-      </div>
-    );
-  }
 
   return (
     <>
       <Dialog>
         <DialogTrigger asChild>{children}</DialogTrigger>
-        <DialogContent className="max-w-[550px]">
-          <DialogHeader className="my-6">
-            <div className="flex justify-between items-center">
-              <DialogTitle className="text-xl font-medium text-gray-900 mb-2">
-                Set Reminder for{" "}
-                <span className="font-bold text-primary">{showDate}</span>
-              </DialogTitle>
+
+        <DialogContent className="max-w-[550px] border bg-background">
+          <DialogHeader className="my-4 space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <DialogTitle className="text-xl font-semibold tracking-tight text-foreground">
+                  Set Reminder
+                </DialogTitle>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  For{" "}
+                  <span className="font-semibold text-primary">{showDate}</span>
+                </p>
+              </div>
 
               {isCreating ? (
-                <div
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={toggleCreating}
-                  className="text-sm text-gray-500 hover:text-gray-700 transition-colors cursor-pointer px-3 py-1 rounded-md hover:bg-gray-100"
+                  className="text-muted-foreground"
                 >
                   Cancel
-                </div>
+                </Button>
               ) : (
-                <Button
-                  variant={"ghost"}
-                  className="flex items-center text-sm  text-gray-500 hover:text-gray-700 transition-colors cursor-pointer px-3 py-1 rounded-md hover:bg-gray-100"
-                  onClick={toggleCreating}
-                >
-                  <Plus className="w-4 h-4" />
+                <Button variant="outline" size="sm" onClick={toggleCreating}>
+                  <Plus className="mr-2 h-4 w-4" />
                   Add
                 </Button>
               )}
             </div>
-            <DialogDescription className="text-sm text-gray-500 mt-3">
+
+            <DialogDescription className="text-sm text-muted-foreground">
               {isCreating
-                ? "Choose time for your reminder (must be in the future from the current date and time)"
-                : "Reminder list"}
+                ? "Choose a future time for your reminder."
+                : "Manage your reminders"}
             </DialogDescription>
           </DialogHeader>
+
           {isCreating && (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)}>
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Registered email</FormLabel>
-                        <FormControl>
-                          <Input
-                            disabled
-                            placeholder="Enter reminder title"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Reminder Title</FormLabel>
-                        <FormControl>
-                          <Input
-                            disabled
-                            placeholder="Enter reminder title"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="flex space-x-4 mt-4">
-                  <FormField
-                    control={form.control}
-                    name="hour"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Hour</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+            <div className="rounded-xl border bg-muted/30 p-4">
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-5"
+                >
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Registered Email</FormLabel>
+
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Hour" />
-                            </SelectTrigger>
+                            <Input
+                              disabled
+                              {...field}
+                              className="bg-background"
+                            />
                           </FormControl>
-                          <SelectContent>
-                            {Array.from({ length: 24 }, (_, i) => (
-                              <SelectItem
-                                key={i}
-                                value={i.toString().padStart(2, "0")}
-                              >
-                                {i.toString().padStart(2, "0")}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="minute"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Minute</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Reminder Title</FormLabel>
+
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Minute" />
-                            </SelectTrigger>
+                            <Input
+                              disabled
+                              {...field}
+                              className="bg-background"
+                            />
                           </FormControl>
-                          <SelectContent>
-                            {Array.from({ length: 60 }, (_, i) => (
-                              <SelectItem
-                                key={i}
-                                value={i.toString().padStart(2, "0")}
-                              >
-                                {i.toString().padStart(2, "0")}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <Button type="submit" className="w-full mt-4">
-                  Add Reminder
-                </Button>
-              </form>
-            </Form>
-          )}
-          {!isCreating && reminders.length === 0 && (
-            <p className="text-slate-500 italic">No reminders yet...</p>
-          )}
-          {!isCreating &&
-            reminders.map((reminder) => (
-              <Card
-                key={reminder.id}
-                className="p-1 transition-all hover:shadow-lg mb-1"
-              >
-                <CardContent className="p-3 flex items-center justify-between">
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-x-4">
-                      <h1 className="text-md font-medium text-gray-900">
-                        {reminder.reminderTitle}
-                      </h1>
-                      <Badge
-                        className={cn(
-                          "p-1 font-medium italic",
-                          reminder.reminderStatus === true
-                            ? "bg-emerald-500 hover:bg-emerald-500"
-                            : "bg-red-600  hover:bg-red-600",
-                        )}
-                      >
-                        {reminder.reminderStatus === true
-                          ? "Pending"
-                          : "Expired"}
-                      </Badge>
-                    </div>
-                    <span className="text-xs text-slate-400">
-                      {format(reminder.remindAt, "PPP p")}
-                    </span>
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                  <div>
+
+                  <div className="flex gap-4">
+                    <FormField
+                      control={form.control}
+                      name="hour"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>Hour</FormLabel>
+
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Hour" />
+                              </SelectTrigger>
+                            </FormControl>
+
+                            <SelectContent>
+                              {Array.from({ length: 24 }, (_, i) => (
+                                <SelectItem
+                                  key={i}
+                                  value={i.toString().padStart(2, "0")}
+                                >
+                                  {i.toString().padStart(2, "0")}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="minute"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>Minute</FormLabel>
+
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Minute" />
+                              </SelectTrigger>
+                            </FormControl>
+
+                            <SelectContent>
+                              {Array.from({ length: 60 }, (_, i) => (
+                                <SelectItem
+                                  key={i}
+                                  value={i.toString().padStart(2, "0")}
+                                >
+                                  {i.toString().padStart(2, "0")}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full">
+                    Add Reminder
+                  </Button>
+                </form>
+              </Form>
+            </div>
+          )}
+
+          {!isCreating && reminders.length === 0 && (
+            <div className="flex items-center justify-center rounded-xl border border-dashed py-10">
+              <p className="text-sm italic text-muted-foreground">
+                No reminders yet...
+              </p>
+            </div>
+          )}
+
+          {!isCreating && reminders.length > 0 && (
+            <div className="space-y-3">
+              {reminders.map((reminder) => (
+                <Card
+                  key={reminder.id}
+                  className="border bg-card transition-all hover:shadow-md"
+                >
+                  <CardContent className="flex items-start justify-between gap-4 p-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h1 className="truncate text-sm font-semibold text-foreground">
+                          {reminder.reminderTitle}
+                        </h1>
+
+                        <Badge
+                          className={cn(
+                            "font-medium",
+                            reminder.reminderStatus
+                              ? "bg-emerald-500 hover:bg-emerald-500"
+                              : "bg-destructive hover:bg-destructive",
+                          )}
+                        >
+                          {reminder.reminderStatus ? "Pending" : "Expired"}
+                        </Badge>
+                      </div>
+
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {format(reminder.remindAt, "PPP p")}
+                      </p>
+                    </div>
+
                     <DeleteDialog onClick={() => handleDelete(reminder.id)}>
                       <Button
                         type="button"
-                        size={"icon"}
-                        className="flex justify-center items-center"
+                        size="icon"
+                        variant="ghost"
+                        className="text-muted-foreground hover:text-destructive"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="h-4 w-4" />
                       </Button>
                     </DeleteDialog>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>

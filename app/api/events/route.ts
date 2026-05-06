@@ -16,11 +16,11 @@ export async function GET(req: Request) {
 
     const date = new Date(dateParam);
 
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
+    const startOfDay = new Date(`${dateParam}T00:00:00.000Z`);
+    // startOfDay.setHours(0, 0, 0, 0);
 
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    const endOfDay = new Date(`${dateParam}T23:59:59.999Z`);
+    // endOfDay.setHours(23, 59, 59, 999);
     const events = await prisma.event.findMany({
       where: {
         userId,
@@ -47,15 +47,18 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
     const parsedDate = new Date(eventDate);
+
+    const normalizedDate = new Date(`${eventDate}T00:00:00.000Z`);
+
     const textToEmbed = `Event Date : ${eventDate}\n\n Event Name : ${eventNames[0]}`;
     const embedding = await getEmbeddings(textToEmbed);
 
     const newEvent = await prisma.$transaction(
       async (tx) => {
         const dateRecord = await tx.dateRecord.upsert({
-          where: { date: new Date(parsedDate) },
+          where: { date: normalizedDate },
           update: {},
-          create: { date: new Date(parsedDate) },
+          create: { date: normalizedDate },
         });
 
         const newEvent = await tx.event.create({

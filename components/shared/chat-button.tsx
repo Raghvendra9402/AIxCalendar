@@ -10,7 +10,7 @@ export function ChatButton() {
   return (
     <>
       <Button
-        onClick={() => setIsOpen(true)}
+        onClick={() => setIsOpen((prev) => !prev)}
         size={"icon"}
         variant={"outline"}
         title="Chatbox"

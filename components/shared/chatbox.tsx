@@ -1,6 +1,8 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
+import { useClerk, useUser } from "@clerk/nextjs";
+import { useQueryClient } from "@tanstack/react-query";
 import { Bot, Send, Trash, User, X } from "lucide-react";
 import React from "react";
 import { Button } from "../ui/button";
@@ -12,6 +14,9 @@ interface ChatboxProps {
 }
 
 export function Chatbox({ open, onClose }: ChatboxProps) {
+  const { isSignedIn } = useUser();
+  const { openSignIn } = useClerk();
+  const queryClient = useQueryClient();
   const {
     messages,
     input,
@@ -20,7 +25,15 @@ export function Chatbox({ open, onClose }: ChatboxProps) {
     isLoading,
     error,
     setMessages,
-  } = useChat();
+  } = useChat({
+    async onToolCall({ toolCall }) {
+      if (toolCall.toolName === "create_event") {
+        await queryClient.invalidateQueries({
+          queryKey: ["month-events"],
+        });
+      }
+    },
+  });
   const lastMessageFromUser = messages[messages.length - 1]?.role === "user";
   const inputRef = React.useRef<HTMLInputElement>(null);
   const scrollRef = React.useRef<HTMLDivElement>(null);
@@ -34,68 +47,96 @@ export function Chatbox({ open, onClose }: ChatboxProps) {
       inputRef.current?.focus();
     }
   }, [open]);
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSignedIn) {
+      handleSubmit(e);
+    } else {
+      openSignIn();
+    }
+  };
   return (
     <div
-      className={cn(
-        "bottom-0 left-0 z-50 w-[500px] p-1 xl:left-36",
-        open ? "fixed" : "hidden",
-      )}
+      className={cn("fixed bottom-4 right-4 z-50 w-[500px]", !open && "hidden")}
+      style={{ maxHeight: "calc(100vh - 2rem)" }}
     >
-      <>
-        <div className="p-2 flex h-[500px] flex-col rounded-md border bg-slate-100">
-          <div className=" p-2 flex items-center justify-between mb-2">
-            <h2 className="text-xl">Chatbox</h2>
-            <Button onClick={onClose} variant={"ghost"} size={"icon"}>
-              <X />
-            </Button>
+      <div
+        className="flex h-[500px] flex-col overflow-hidden rounded-2xl border bg-background shadow-2xl"
+        style={{ maxHeight: "calc(100vh - 2rem)" }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b bg-muted/40 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Bot className="h-5 w-5 text-primary" />
+            <h2 className="text-sm font-semibold tracking-wide">
+              AI Assistant
+            </h2>
           </div>
-          <div className="mt-2 h-full overflow-y-auto" ref={scrollRef}>
-            {messages.map((message) => (
-              <ChatMessage message={message} key={message.id} />
-            ))}
-            {isLoading && lastMessageFromUser && (
-              <ChatMessage
-                message={{
-                  id: "loading",
-                  role: "assistant",
-                  content: "Thinking...",
-                }}
-              />
-            )}
-            {error && lastMessageFromUser && (
-              <ChatMessage
-                message={{
-                  id: "error",
-                  role: "assistant",
-                  content: "Try Again...",
-                }}
-              />
-            )}
-          </div>
-          <form
-            onSubmit={handleSubmit}
-            className="m-3 flex gap-x-2 items-center"
-          >
-            <Button
-              className="flex flex-none items-center justify-center"
-              title="Clear Chat"
-              type="button"
-              onClick={() => setMessages([])}
-            >
-              <Trash />
-            </Button>
-            <Input
-              value={input}
-              onChange={handleInputChange}
-              ref={inputRef}
-              className="bg-white"
-            />
-            <Button type="submit">
-              <Send />
-            </Button>
-          </form>
+
+          <Button onClick={onClose} variant="ghost" size="icon">
+            <X className="h-4 w-4" />
+          </Button>
         </div>
-      </>
+
+        {/* Messages */}
+        <div
+          className="flex-1 space-y-4 overflow-y-auto bg-background/50 p-4 min-h-0"
+          ref={scrollRef}
+        >
+          {messages.map((message) => (
+            <ChatMessage message={message} key={message.id} />
+          ))}
+
+          {isLoading && lastMessageFromUser && (
+            <ChatMessage
+              message={{
+                id: "loading",
+                role: "assistant",
+                content: "Thinking...",
+              }}
+            />
+          )}
+
+          {error && lastMessageFromUser && (
+            <ChatMessage
+              message={{
+                id: "error",
+                role: "assistant",
+                content: "Something went wrong. Try again.",
+              }}
+            />
+          )}
+        </div>
+
+        {/* Input */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex items-center gap-2 border-t bg-background p-3"
+        >
+          <Button
+            type="button"
+            title="Clear Chat"
+            variant="outline"
+            size="icon"
+            onClick={() => setMessages([])}
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+
+          <Input
+            value={input}
+            onChange={handleInputChange}
+            ref={inputRef}
+            placeholder="Ask something..."
+            className="bg-background"
+          />
+
+          <Button type="submit" size="icon">
+            <Send className="h-4 w-4" />
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }
@@ -107,24 +148,34 @@ interface ChatMessageProps {
 function ChatMessage({ message: { role, content } }: ChatMessageProps) {
   const isAI = role === "assistant";
   return (
-    <div
-      className={cn(
-        "mb-3 flex items-center",
-        isAI ? "me-5 justify-start" : "ms-5 justify-end",
-      )}
-    >
-      {isAI ? (
-        <Bot className="mr-2 flex-none" />
-      ) : (
-        <User className="mr-2 flex-none" />
-      )}
+    <div className={cn("flex w-full", isAI ? "justify-start" : "justify-end")}>
       <div
         className={cn(
-          "rounded-md border px-3 py-2",
-          isAI ? "bg-background" : "bg-foreground text-background",
+          "flex max-w-[85%] items-start gap-2",
+          !isAI && "flex-row-reverse",
         )}
       >
-        {content}
+        <div
+          className={cn(
+            "mt-1 flex h-8 w-8 items-center justify-center rounded-full border",
+            isAI
+              ? "bg-muted text-muted-foreground"
+              : "bg-primary text-primary-foreground",
+          )}
+        >
+          {isAI ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
+        </div>
+
+        <div
+          className={cn(
+            "rounded-2xl px-4 py-3 text-sm shadow-sm",
+            isAI
+              ? "border bg-muted text-foreground"
+              : "bg-primary text-primary-foreground",
+          )}
+        >
+          {content}
+        </div>
       </div>
     </div>
   );

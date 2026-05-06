@@ -59,7 +59,6 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
           <p>© {new Date().getFullYear()} CalAI. All rights reserved.</p>
-          <p className="text-slate-600">Built with ❤️ and a lot of AI</p>
         </div>
       </div>
     </footer>

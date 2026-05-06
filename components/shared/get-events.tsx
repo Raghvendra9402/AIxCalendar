@@ -11,6 +11,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { DeleteDialog } from "./delete-event-dialog";
 import { ReminderDialog } from "./reminder-dialog";
+import { format } from "date-fns";
 
 interface EventFormProps {
   date: Date;
@@ -20,10 +21,10 @@ export default function GetEvents({ date }: EventFormProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { data: events, status } = useQuery<Event[]>({
-    queryKey: ["events", date.toISOString()],
+    queryKey: ["events", format(date, "yyyy-MM-dd")],
     queryFn: async () => {
       const data = await kyInstance
-        .get(`/api/events?date=${date.toISOString()}`)
+        .get(`/api/events?date=${format(date, "yyyy-MM-dd")}`)
         .json<Event[]>();
       console.log("API response:", data);
       return data ?? [];
@@ -35,11 +36,14 @@ export default function GetEvents({ date }: EventFormProps) {
   async function handleDelete(eventId: string) {
     try {
       await axios.delete(`/api/events/${eventId}`);
-      toast.success("event deleted");
-      queryClient.invalidateQueries({
-        queryKey: ["events", date.toISOString()],
+
+      await queryClient.invalidateQueries({
+        queryKey: ["events", format(date, "yyyy-MM-dd")],
       });
-      router.refresh();
+      await queryClient.invalidateQueries({
+        queryKey: ["month-events"], // ✅ refreshes calendar tiles too
+      });
+      toast.success("event deleted");
     } catch {
       toast.error("something went wrong");
     }
@@ -72,28 +76,42 @@ export default function GetEvents({ date }: EventFormProps) {
   }
 
   return (
-    <div className="flex flex-col gap-1 mt-2">
+    <div className="mt-3 flex flex-col gap-3">
       {events.map((event) => (
-        <Card key={event.id} className="transition-all hover:shadow-lg">
-          <CardContent className="p-3 flex flex-col gap-1">
-            <div className="flex flex-1 items-center justify-between">
-              <h3 className="text-md font-medium text-gray-900">
-                {event.eventName}
-              </h3>
+        <Card
+          key={event.id}
+          className="border bg-card transition-all hover:shadow-md"
+        >
+          <CardContent className="flex flex-col gap-3 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-sm font-semibold text-foreground">
+                  {event.eventName}
+                </h3>
+              </div>
+
               <DeleteDialog onClick={() => handleDelete(event.id)}>
-                <Button size="icon">
-                  <X className="w-4 h-4" />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <X className="h-4 w-4" />
                 </Button>
               </DeleteDialog>
             </div>
+
             <ReminderDialog
               date={date}
               eventName={event.eventName}
               initialData={event}
             >
-              <p className="text-xs text-neutral-500 italic tracking-wide cursor-pointer">
-                Click to add reminders
-              </p>
+              <button
+                type="button"
+                className="w-fit text-xs font-medium tracking-wide text-primary transition-colors hover:underline"
+              >
+                Add reminders
+              </button>
             </ReminderDialog>
           </CardContent>
         </Card>
