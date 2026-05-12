@@ -1,7 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
-import { useClerk, useUser } from "@clerk/nextjs";
 import { useQueryClient } from "@tanstack/react-query";
 import { Bot, Send, Trash, User, X } from "lucide-react";
 import React from "react";
@@ -14,8 +13,8 @@ interface ChatboxProps {
 }
 
 export function Chatbox({ open, onClose }: ChatboxProps) {
-  const { isSignedIn } = useUser();
-  const { openSignIn } = useClerk();
+  // const { isSignedIn } = useUser();
+  // const { openSignIn } = useClerk();
   const queryClient = useQueryClient();
   const {
     messages,

@@ -1,25 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useDeleteEvent } from "@/hooks/useEvents";
 import { Prisma } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { DeleteDialog } from "../delete-event-dialog";
+import { ArrowUpDown } from "lucide-react";
 import { ActionsCell } from "../actions-cell";
 
 // This type is used to define the shape of our data.
