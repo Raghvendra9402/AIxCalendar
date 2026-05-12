@@ -23,9 +23,10 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
             cd ~/AIxCalendar
+            rm -rf node_modules
             git fetch origin
             git reset --hard origin/master
-            npm ci
-            npm run build
-            pm2 restart ai-calendar
+            npm ci || exit 1
+            npm run build || exit 1
+            pm2 restart all
             sudo nginx -s reload
