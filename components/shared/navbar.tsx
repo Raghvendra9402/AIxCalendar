@@ -4,7 +4,6 @@ import { UserButton, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { ChatButton } from "./chat-button";
 
 export default function Navbar() {
   const { isSignedIn } = useUser();

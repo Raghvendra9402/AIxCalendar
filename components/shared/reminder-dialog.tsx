@@ -25,7 +25,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Event } from "@prisma/client";
 import { format } from "date-fns";
 import { Plus, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -64,11 +63,11 @@ export function ReminderDialog({
   eventName,
   initialData,
 }: ReminderDialogProps) {
-  const { data: reminders = [], isLoading } = useGetReminders(initialData.id);
+  const { data: reminders = [] } = useGetReminders(initialData.id);
   const createReminder = useCreateReminder(initialData.id);
   const deleteReminder = useDeleteReminder(initialData.id);
   const [isCreating, setIsCreating] = useState(false);
-  const router = useRouter();
+
   const { user } = useUser();
   const userEmail = user?.primaryEmailAddress?.emailAddress;
   if (!userEmail) {
@@ -264,7 +263,11 @@ export function ReminderDialog({
                     />
                   </div>
 
-                  <Button type="submit" className="w-full">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={createReminder.isPending}
+                  >
                     Add Reminder
                   </Button>
                 </form>
@@ -311,7 +314,10 @@ export function ReminderDialog({
                       </p>
                     </div>
 
-                    <DeleteDialog onClick={() => handleDelete(reminder.id)}>
+                    <DeleteDialog
+                      onClick={() => handleDelete(reminder.id)}
+                      disabled={deleteReminder.isPending}
+                    >
                       <Button
                         type="button"
                         size="icon"

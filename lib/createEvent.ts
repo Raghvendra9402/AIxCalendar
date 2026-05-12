@@ -45,7 +45,7 @@ export async function createEvent({
         ]);
         return { createdEvent, dateRecord };
       },
-      { timeout: 10000 }
+      { timeout: 10000 },
     );
 
     return {

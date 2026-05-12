@@ -48,14 +48,15 @@ export function Chatbox({ open, onClose }: ChatboxProps) {
     }
   }, [open]);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (isSignedIn) {
-      handleSubmit(e);
-    } else {
-      openSignIn();
-    }
-  };
+  // const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   if (isSignedIn) {
+  //     handleSubmit(e);
+  //   } else {
+  //     openSignIn();
+  //   }
+  // };
+
   return (
     <div
       className={cn("fixed bottom-4 right-4 z-50 w-[500px]", !open && "hidden")}

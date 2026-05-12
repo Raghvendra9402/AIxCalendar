@@ -10,6 +10,7 @@ const worker = new Worker(
   async (job) => {
     try {
       const { id, title, email } = await job.data;
+      console.log(job.data);
       if (!id || !title || !email) {
         console.log("[MISSING_JOB_FIELDS]", job.data);
         return;
@@ -25,10 +26,20 @@ const worker = new Worker(
       }
 
       await resend.emails.send({
-        from: "AIxCalendar <ai-calendar@resend.dev>",
+        from: "CAL-AI <noreply@mail.rsxdev.co.in>",
         to: email,
-        subject: "Reminder Notification",
-        text: `Reminder Alert : Your reminder of ${title}`,
+        subject: `⏰ Reminder: ${title}`,
+        text: `
+            Hi there,
+
+            Just a quick reminder about your upcoming event.
+
+            Event: ${title}
+
+            Stay prepared and have a great day!
+
+            — Team CAL-AI
+        `,
       });
 
       console.log(`Reminder sent to ${email} for ${title}`);
@@ -44,11 +55,11 @@ const worker = new Worker(
     } catch (error) {
       console.error(
         "Something went wrong during job processing by worker",
-        error
+        error,
       );
     }
   },
-  { connection: redis }
+  { connection: redis },
 );
 
 console.log("Worker is running", worker.id);

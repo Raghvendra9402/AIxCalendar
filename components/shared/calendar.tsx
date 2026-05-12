@@ -1,14 +1,12 @@
 "use client";
+import { useMonthEvents } from "@/hooks/useEvents";
 import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
-import { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
-import React, { useState } from "react";
+import { useState } from "react";
 import ReactCalendar from "react-calendar";
 import { DateSheet } from "./date-selected-sheet";
 import { EventForm } from "./event-form";
-import { useMonthEvents } from "@/hooks/useEvents";
-import { format } from "date-fns";
 
 interface CalendarProps {
   userId: string;

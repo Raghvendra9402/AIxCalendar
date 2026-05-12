@@ -6,7 +6,6 @@ import * as z from "zod";
 
 import { format } from "date-fns";
 import { CalendarIcon, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "../ui/button";
@@ -20,9 +19,9 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 
+import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import GetEvents from "./get-events";
-import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   eventDate: z.date(),

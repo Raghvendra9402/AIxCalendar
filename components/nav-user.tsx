@@ -25,8 +25,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { UserProfile } from "@clerk/nextjs";
-import { useState } from "react";
 
 export function NavUser({
   user,

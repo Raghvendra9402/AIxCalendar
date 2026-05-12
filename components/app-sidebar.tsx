@@ -1,23 +1,15 @@
 "use client";
 
-import * as React from "react";
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
   Calendar,
   CalendarClock,
   Command,
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
 } from "lucide-react";
+import * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
@@ -28,9 +20,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { useUser } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
-import logo from "@/public/logo-small.svg";
-import { ChatButton } from "./shared/chat-button";
 
 // This is sample data.
 const data = {
@@ -84,9 +73,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <NavUser
           user={{
-            name: user?.fullName!,
-            email: user?.emailAddresses[0].emailAddress!,
-            avatar: user?.imageUrl!,
+            name: user?.fullName ?? "User",
+            email: user?.emailAddresses[0]?.emailAddress ?? "",
+            avatar: user?.imageUrl ?? "",
           }}
         />
       </SidebarFooter>

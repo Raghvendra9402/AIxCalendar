@@ -14,8 +14,6 @@ export async function GET(req: Request) {
       return new NextResponse("invalid parameters", { status: 400 });
     }
 
-    const date = new Date(dateParam);
-
     const startOfDay = new Date(`${dateParam}T00:00:00.000Z`);
     // startOfDay.setHours(0, 0, 0, 0);
 
@@ -46,7 +44,6 @@ export async function POST(req: Request) {
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-    const parsedDate = new Date(eventDate);
 
     const normalizedDate = new Date(`${eventDate}T00:00:00.000Z`);
 

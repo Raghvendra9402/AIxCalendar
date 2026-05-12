@@ -4,14 +4,13 @@ import kyInstance from "@/lib/kyInstance";
 import { Event } from "@prisma/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { format } from "date-fns";
 import { Loader2, TriangleAlert, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { DeleteDialog } from "./delete-event-dialog";
 import { ReminderDialog } from "./reminder-dialog";
-import { format } from "date-fns";
 
 interface EventFormProps {
   date: Date;
@@ -19,7 +18,6 @@ interface EventFormProps {
 
 export default function GetEvents({ date }: EventFormProps) {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { data: events, status } = useQuery<Event[]>({
     queryKey: ["events", format(date, "yyyy-MM-dd")],
     queryFn: async () => {

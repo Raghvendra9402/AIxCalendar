@@ -27,6 +27,7 @@ export async function GET() {
 
     return NextResponse.json(dateRecords);
   } catch (error) {
+    console.log("[ALL_EVENTS_ROUTE]", error);
     return new NextResponse("Invalid server error", { status: 500 });
   }
 }

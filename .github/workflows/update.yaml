@@ -1,0 +1,28 @@
+name: Update the changes in ec2 machine
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: ssh into server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ~/AIxCalendar
+            git fetch origin
+            git reset --hard origin/master
+            npm ci
+            npm run build
+            pm2 restart ai-calendar
+            sudo nginx -s reload
